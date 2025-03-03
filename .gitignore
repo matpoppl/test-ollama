@@ -1,0 +1,4 @@
+/ollama/data/
+/pgvector/data/
+/redis-stack/data/
+#/secrets/

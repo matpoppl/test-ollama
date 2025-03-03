@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/php/libs/http-message/src" isTestSource="false" packagePrefix="Lib\HttpMessage\" />
+      <sourceFolder url="file://$MODULE_DIR$/php/libs/ollama-api/src" isTestSource="false" packagePrefix="Lib\OllamaAPI\" />
+      <sourceFolder url="file://$MODULE_DIR$/php/src" isTestSource="false" packagePrefix="App\" />
+      <sourceFolder url="file://$MODULE_DIR$/php/libs/service-container/src" isTestSource="false" packagePrefix="Lib\ServiceContainer\" />
+      <sourceFolder url="file://$MODULE_DIR$/php/spec" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/composer" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/guzzlehttp/guzzle" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/guzzlehttp/promises" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/guzzlehttp/psr7" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/psr/http-client" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/psr/http-factory" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/psr/http-message" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/ralouphie/getallheaders" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/symfony/deprecation-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/php/vendor/psr/container" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

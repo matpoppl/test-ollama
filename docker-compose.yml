@@ -1,0 +1,51 @@
+name: myai
+
+services:
+
+  php:
+    build: php
+    command: "php -S php:8080 -t /var/www/public"
+    ports: ["8080:8080"]
+    volumes:
+      - ./php:/var/www:rw
+      - ./php/docker/etc/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    secrets:
+      - php-auths
+    labels:
+      - "myai.usage=http://127.0.0.1:8080/"
+
+  ollama:
+    build: ollama
+    ports: ["11434:11434"]
+    volumes:
+      - ollama-data:/root/.ollama:rw
+    labels:
+      - "myai.usage=http://127.0.0.1:11434/api/tags"
+
+  pgvector:
+    build: pgvector
+    ports: ["5432:5432"]
+    restart: always
+    env_file: ./pgvector/.env
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data:rw
+    secrets:
+      - pgvector-dbname
+      - pgvector-user
+      - pgvector-password
+
+volumes:
+  pgvector-data:
+  ollama-data:
+
+secrets:
+  redis-users:
+    file: ./secrets/redis-users.acl
+  php-auths:
+    file: ./secrets/php-auths.ini
+  pgvector-dbname:
+    file: ./secrets/pgvector-dbname.txt
+  pgvector-user:
+    file: ./secrets/pgvector-user.txt
+  pgvector-password:
+    file: ./secrets/pgvector-password.txt
