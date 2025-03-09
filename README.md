@@ -4,6 +4,7 @@
 docker compose up
 
 docker exec myai-ollama-1 ollama run llama3.2:1b
+docker exec myai-ollama-1 ollama run qwen2.5-coder:3b
 
 docker exec -it myai-php-1 composer install
 
@@ -19,5 +20,6 @@ docker exec -it myai-php-1 php public/tasks/embed_posts.php
 
 # Links
 
+- https://github.com/ollama/ollama/blob/main/docs/api.md
 - https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/chains/question_answering/map_rerank_prompt.py
 - https://hub.docker.com/_/postgres

@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace Lib\OllamaAPI;
 
 use DateTimeImmutable;
+use Lib\OllamaAPI\Chat\ChatHistory;
+use Lib\OllamaAPI\Chat\GetCurrentWeatherTool;
+use Lib\OllamaAPI\Chat\Tools;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
+
 use function json_decode;
+use function json_encode;
 use const JSON_THROW_ON_ERROR;
 
 class OllamaAPI
@@ -88,5 +93,45 @@ class OllamaAPI
         $response = $this->httpClient->sendRequest($request->withBody($stream));
 
         return json_decode((string) $response->getBody(), false, 512, JSON_THROW_ON_ERROR);
+    }
+
+    public function aiChat(string $model, string $input): object
+    {
+        $sendRequest = function (string $model, ChatHistory $history, ?Tools $tools): object
+        {
+            $stream = $this->httpRequestFactory->createStream();
+            $stream->write(json_encode([
+                'model' => $model,
+                'stream' => false,
+                'messages' => $history->jsonSerialize(),
+                'tools' => $tools?->jsonSerialize() ?? [],
+            ]));
+            $request = $this->httpRequestFactory->createRequest('POST', 'chat');
+            $response = $this->httpClient->sendRequest($request->withBody($stream));
+
+            return json_decode((string) $response->getBody(), false, 512, JSON_THROW_ON_ERROR);
+        };
+
+        $history = new ChatHistory();
+        $tools = new Tools();
+        $tools->register(new GetCurrentWeatherTool());
+        $history->add('user', $input);
+        $response = $sendRequest($model, $history, $tools);
+        $history->addMessage($response->message);
+
+        foreach ($response->message->tool_calls ?? [] as $tool_call) {
+            if ($function = $tool_call->function ?? null) {
+                $history->add(
+                    'tool',
+                    $tools->get($function->name ?? 'Name missing')->call($function->arguments ?? null)
+                );
+            }
+        }
+
+        $response = $sendRequest($model, $history, null);
+        $history->addMessage($response->message);
+        $response->__HISTORY__ = $history->jsonSerialize();
+
+        return $response;
     }
 }

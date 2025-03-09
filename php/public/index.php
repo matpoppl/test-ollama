@@ -49,6 +49,16 @@ switch (ServerRequest::fromGlobals()->getUri()->getPath()) {
             $repository = $bootstrap->getService(PostsRepository::class);
 
             die(json_encode([...$repository->searchByEmbedding(...$embedding->embeddings[0])]));
+    case '/tool':
+            header('Content-Type: application/json; charset=utf-8');
+
+            $tool = $_POST['tool'] ?? [];
+            $response = $api->aiChat(
+                $tool['model'] ?? '',
+                $tool['phrase'] ?? '',
+            );
+
+            die(json_encode($response));
         break;
     case '/question':
             header('Content-Type: application/json; charset=utf-8');
@@ -161,7 +171,7 @@ PROMPT;
     </fieldset>
 </form>
 
-<form method="GET" action="/embeddings" target="_blank">
+<form method="POST" action="/embeddings" target="_blank">
     <fieldset>
         <legend>Generate embeddings</legend>
         <div>
@@ -229,6 +239,26 @@ PROMPT;
     </fieldset>
 </form>
 
-<ul>
-    <li><a href="https://github.com/ollama/ollama/blob/main/docs/api.md" target="_blank">Ollama API docs</a></li>
-</ul>
+<form method="POST" action="/tool" target="_blank">
+    <fieldset>
+        <legend>Tools</legend>
+
+        <div>
+            <label for="tool[model]">LLM Model</label>
+            <select id="tool[model]" name="tool[model]" required>
+                <option value="">-- choose --</option>
+                <?php foreach ($modelsList as $model): ?>
+                    <option value="<?= $model->name ?>"><?= "{$model->name} ({$model->getReadableSize()})" ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div>
+            <label for="tool[phrase]">Search phrase: </label>
+            <input type="search" id="tool[phrase]" name="tool[phrase]" required size="90"
+                placeholder="What is the current temperature in Warsaw, Poland?"/>
+        </div>
+
+        <button type="submit">Use tool</button>
+    </fieldset>
+</form>
