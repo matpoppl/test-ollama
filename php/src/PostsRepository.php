@@ -33,9 +33,17 @@ class PostsRepository
      *     content: string,
      * }>
      */
-    public function searchByEmbedding(float ...$embeddings): iterable
+    public function searchByEmbedding(string $index, float ...$embeddings): iterable
     {
-        $stmt = $this->pdo->prepare('SELECT id, content FROM posts ORDER BY embeddings_llama_3_2_1b <=> ? LIMIT 5');
+        $orderBy = match ($index) {
+            'l2' => 'embeddings_llama_3_2_1b <-> :q',
+            'l2_halfvec' => 'embeddings_llama_3_2_1b::halfvec(2048) <-> :q::halfvec(2048)',
+            'cosine' => 'embeddings_llama_3_2_1b <=> :q',
+            // cosine_halfvec
+            default => 'embeddings_llama_3_2_1b::halfvec(2048) <=> :q::halfvec(2048)'
+        };
+
+        $stmt = $this->pdo->prepare("SELECT id, content FROM posts ORDER BY {$orderBy} LIMIT 20");
         $stmt->execute([
             '['.implode(',', $embeddings).']'
         ]);

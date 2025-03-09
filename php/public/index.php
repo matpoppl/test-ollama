@@ -12,6 +12,12 @@ require __DIR__ . '/../vendor/autoload.php';
 $bootstrap = Bootstrap::create();
 $api = $bootstrap->getService(OllamaAPI::class);
 $modelsList = $api->listModels();
+$searchIndexes = [
+    'cosine_halfvec' => 'Cosine halfvec',
+    'cosine' => 'Cosine',
+    'l2_halfvect' => 'L2 halfvect',
+    'l2' => 'L2',
+];
 
 switch (ServerRequest::fromGlobals()->getUri()->getPath()) {
     case '/list-models':
@@ -46,9 +52,13 @@ switch (ServerRequest::fromGlobals()->getUri()->getPath()) {
                 $search['model'] ?? '',
                 $search['phrase'] ?? '',
             );
-            $repository = $bootstrap->getService(PostsRepository::class);
+            $index = $search['index'] ?? '';
 
-            die(json_encode([...$repository->searchByEmbedding(...$embedding->embeddings[0])]));
+            if (! is_array($embedding->embeddings[0] ?? null)) {
+                die('"Embeddings generation error"');
+            }
+
+            die(json_encode([...$bootstrap->getService(PostsRepository::class)->searchByEmbedding($index, ...$embedding->embeddings[0])]));
     case '/tool':
             header('Content-Type: application/json; charset=utf-8');
 
@@ -66,14 +76,14 @@ switch (ServerRequest::fromGlobals()->getUri()->getPath()) {
             $question = $_GET['question'] ?? [];
             $model = $question['model'] ?? '';
             $phrase = $question['phrase'] ?? '';
+            $index = $question['index'] ?? '';
 
             $embedding = $api->aiEmbeddings($model, $phrase);
-
             $repository = $bootstrap->getService(PostsRepository::class);
 
             $results = [];
 
-            foreach ($repository->searchByEmbedding(...$embedding->embeddings[0]) as $post) {
+            foreach ($repository->searchByEmbedding($index, ...$embedding->embeddings[0]) as $post) {
 
                 $prompt = <<<PROMPT
 Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -133,7 +143,9 @@ PROMPT;
                 $result = $api->aiCompletion($model, $prompt);
                 $result->context = '---REMOVED---';
 
-                $results[] = $result;
+                if (str_contains($result->response, 'Score: ')) {
+                    $results[] = $result;
+                }
             }
 
             die(json_encode($results, JSON_THROW_ON_ERROR));
@@ -208,6 +220,16 @@ PROMPT;
         </div>
 
         <div>
+            <label for="search[index]">Query Index</label>
+            <select id="search[index]" name="search[index]" required>
+                <option value="">-- choose --</option>
+                <?php foreach ($searchIndexes as $value => $label): ?>
+                    <option value="<?= $value ?>"><?= $label ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div>
             <label for="search[phrase]">Search phrase: </label>
             <input type="search" id="search[phrase]" name="search[phrase]" required size="90" />
         </div>
@@ -226,6 +248,16 @@ PROMPT;
                 <option value="">-- choose --</option>
                 <?php foreach ($modelsList as $model): ?>
                     <option value="<?= $model->name ?>"><?= "{$model->name} ({$model->getReadableSize()})" ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div>
+            <label for="question[index]">Query Index</label>
+            <select id="question[index]" name="question[index]" required>
+                <option value="">-- choose --</option>
+                <?php foreach ($searchIndexes as $value => $label): ?>
+                    <option value="<?= $value ?>"><?= $label ?></option>
                 <?php endforeach; ?>
             </select>
         </div>

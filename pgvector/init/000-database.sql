@@ -10,3 +10,4 @@ CREATE TABLE posts (
 
 -- https://github.com/pgvector/pgvector?tab=readme-ov-file#indexing
 CREATE INDEX ON posts USING hnsw ((embeddings_llama_3_2_1b::halfvec(2048)) halfvec_cosine_ops);
+CREATE INDEX ON posts USING hnsw ((embeddings_llama_3_2_1b::halfvec(2048)) halfvec_l2_ops);

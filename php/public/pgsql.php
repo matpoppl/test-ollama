@@ -8,7 +8,7 @@ use Lib\ServiceContainer\ServiceContainerFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-//header('Content-Type: application/json; charset=utf-8');
+header('Content-Type: application/json; charset=utf-8');
 
 $sm = (new ServiceContainerFactory())->create(
     (new ConfigBuilder)
