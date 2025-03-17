@@ -40,10 +40,17 @@ switch (ServerRequest::fromGlobals()->getUri()->getPath()) {
 
             $completion = $_POST['embeddings'] ?? [];
 
-            die(json_encode($api->aiEmbeddings(
+            $resp = $api->aiEmbeddings(
                 $completion['model'] ?? '',
                 $completion['prompt'] ?? '',
-            )));
+            );
+
+            $resp->__EMBEDDINGS_LENGTH__ = array_map(
+                fn(array $embeddings) => count($embeddings),
+                $resp->embeddings
+            );
+
+            die(json_encode($resp));
     case '/search':
             header('Content-Type: application/json; charset=utf-8');
 

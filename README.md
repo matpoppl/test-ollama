@@ -3,7 +3,7 @@
 ```shell
 docker compose up
 
-docker exec myai-ollama-1 ollama run llama3.2:1b
+docker exec myai-ollama-1 ollama run paraphrase-multilingual:278m
 docker exec myai-ollama-1 ollama run qwen2.5-coder:3b
 
 docker exec -it myai-php-1 composer install
